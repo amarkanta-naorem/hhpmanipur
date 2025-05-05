@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  DONOR
+  PATIENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum BloodGroup {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+}
+
+enum BloodType {
+  WHOLE_BLOOD
+  PLATELETS
+  PLASMA
+  RED_CELLS
+}
+
+enum BloodRequestStatus {
+  PENDING
+  SCHEDULED
+  COMPLETED
+  ON_HOLD
+  CLOSED
+}
+
+enum DonationMethod {
+  VOLUNTARY
+  REPLACEMENT
+  CAMPAIGN
+  DIRECTED
+}
+
+enum FilePurpose {
+  LAB_REPORT
+  PRESCRIPTION
+  AADHAAR_CARD
+  MEDICAL_DOCUMENT
+  PROFILE_PIC
+  OTHER
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String?   @unique
+  phone      String    @unique
+  password   String
+  role       Role      @default(PATIENT)
+  gender     Gender
+  dob        DateTime  @db.Date
+  occupation String?
+  address    String
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  Donor                 Donor[]
+  BloodRequest          BloodRequest[]
+  DonationRecord        DonationRecord[]
+  BloodRequestCreatedBy BloodRequest[]   @relation("BloodRequestCreatedBy")
+  BloodRequestUpdatedBy BloodRequest[]   @relation("BloodRequestUpdatedBy")
+  BloodRequestDeletedBy BloodRequest[]   @relation("BloodRequestDeletedBy")
+}
+
+model Branch {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?   @db.Text
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
+
+  Donor Donor[]
+}
+
+model Donor {
+  id              Int        @id @default(autoincrement())
+  user_id         Int
+  branch_id       Int
+  blood_group     BloodGroup
+  medical_history String?    @db.Text
+  is_eligible     Boolean    @default(true)
+  last_donation   DateTime?  @db.Date
+  total_donations Int        @default(0)
+  created_at      DateTime   @default(now())
+  updated_at      DateTime   @updatedAt
+  deleted_at      DateTime?
+
+  user   User   @relation(fields: [user_id], references: [id])
+  branch Branch @relation(fields: [branch_id], references: [id])
+
+  DonationRecord DonationRecord[]
+}
+
+model BloodRequest {
+  id                    Int                @id @default(autoincrement())
+  user_id               Int
+  patient_name          String
+  patient_phone         String
+  age                   Int
+  gender                Gender
+  guardian_name         String
+  address               String
+  blood_group           BloodGroup
+  attendants            String             @db.Text
+  blood_type            BloodType
+  units                 Int
+  haemoglobin           Int
+  platelets             Int
+  transfusion_till_date String             @db.Text
+  replacement_till_date String             @db.Text
+  hospital_name         String
+  hospital_address      String
+  ward                  String
+  bed_number            String
+  concern_doctor        String
+  referred_by           String
+  clinical_diagnosis    String             @db.Text
+  request_date          DateTime           @default(now()) @db.Date
+  donated_date          DateTime?          @db.Date
+  status                BloodRequestStatus @default(PENDING)
+  created_at            DateTime           @default(now())
+  updated_at            DateTime           @updatedAt
+  deleted_at            DateTime?
+  created_by            Int
+  updated_by            Int
+  deleted_by            Int
+
+  user      User @relation(fields: [user_id], references: [id])
+  createdBy User @relation("BloodRequestCreatedBy", fields: [created_by], references: [id])
+  updatedBy User @relation("BloodRequestUpdatedBy", fields: [updated_by], references: [id])
+  deletedBy User @relation("BloodRequestDeletedBy", fields: [deleted_by], references: [id])
+
+  DonationRecord DonationRecord[]
+}
+
+model DonationRecord {
+  id               Int            @id @default(autoincrement())
+  donor_id         Int
+  blood_request_id Int
+  donation_method  DonationMethod
+  approved_by      Int
+  description      String?        @db.Text
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
+  deleted_at       DateTime?
+  donor            Donor          @relation(fields: [donor_id], references: [id])
+  blood_request    BloodRequest   @relation(fields: [blood_request_id], references: [id])
+  approvedBy       User           @relation(fields: [approved_by], references: [id])
+}
+
+model File {
+  id            Int         @id @default(autoincrement())
+  fileable_id   Int
+  fileable_type String
+  file_url      String      @db.Text
+  file_purpose  FilePurpose
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @updatedAt
+  deleted_at    DateTime?
+}

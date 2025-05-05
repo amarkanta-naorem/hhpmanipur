@@ -1,0 +1,37 @@
+{
+  "name": "hhpmanipur",
+  "version": "1.0.0",
+  "description": "Helping Hands for People is a non-profit charitable trust that works with the economically weaker sections of the society in medical, health and others. HHP was formed by a team of Voluntary Blood Donors.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "dev": "nodemon src/index.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "node.js",
+    "express.js",
+    "prisma",
+    "ORM",
+    "PostgreSQL"
+  ],
+  "author": "Amarkanta Naorem",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.7.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "hhpmanipur": "file:",
+    "prisma": "^6.7.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.15.3",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
